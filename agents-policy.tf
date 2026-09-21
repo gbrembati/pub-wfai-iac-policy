@@ -8,7 +8,7 @@
 # for internal servers, so they also cover whitelisted internal MCP servers.
 
 resource "cpwai_workforce_ai_agents_rule" "block_destructive_operations" {
-  name        = "Block unsupervised destructive tool operations"
+  name        = "[Terraform] Block unsupervised destructive tool operations"
   description = <<-EOT
     Dangerous scenario: an AI agent autonomously invokes an MCP tool with a
     destructive operation (DELETE) on a company system - e.g. deleting files,
@@ -47,7 +47,7 @@ resource "cpwai_workforce_ai_agents_rule" "block_destructive_operations" {
 }
 
 resource "cpwai_workforce_ai_agents_rule" "ask_on_update_operations" {
-  name        = "Ask before unsupervised UPDATE tool operations"
+  name        = "[Terraform] Ask before unsupervised UPDATE tool operations"
   description = <<-EOT
     Dangerous scenario: an AI agent autonomously invokes an MCP tool with an
     UPDATE operation (e.g. modifying a record, a file, a cloud resource)
@@ -87,7 +87,7 @@ resource "cpwai_workforce_ai_agents_rule" "ask_on_update_operations" {
 }
 
 resource "cpwai_workforce_ai_agents_rule" "allow_internal_mcp_only" {
-  name        = "Allow only internal MCP servers"
+  name        = "[Terraform] Allow only internal MCP servers"
   description = "Allows connections only to vetted internal company MCP servers."
   order       = 2
   active      = true
@@ -126,7 +126,7 @@ resource "cpwai_workforce_ai_agents_rule" "allow_internal_mcp_only" {
 }
 
 resource "cpwai_workforce_ai_agents_rule" "block_unlisted_mcp_servers" {
-  name        = "Block all other MCP servers"
+  name        = "[Terraform] Block all other MCP servers"
   description = <<-EOT
     Dangerous scenario: an employee connects an unverified third-party MCP
     server (e.g. found in a public repository) to their AI client, which may

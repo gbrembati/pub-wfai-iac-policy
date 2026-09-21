@@ -41,11 +41,15 @@ variable "credit_card_data_type_id" {
 
 variable "secrets_data_type_id" {
   description = <<-EOT
-    ID of the CUSTOM DLP data type for secrets / API keys / source code. This
-    type does not exist by default: it must be created at the tenant level via
-    the DLP Datatypes API, then its UUID goes here. See README.md.
+    ID of the DLP data type used to redact secrets / API keys / credentials in
+    prompts. Defaults to the tenant's PRE_DEFINED "Credentials" type, since
+    neither this provider nor the workforce-ai MCP server can create a CUSTOM
+    data type (that requires the DLP Datatypes API / Infinity portal
+    directly). Override with a CUSTOM type's UUID for broader coverage (e.g.
+    raw source code) - see README.md.
   EOT
   type        = string
+  default     = "e2543f91-701c-4663-9a01-a6d081c8dd31"
 }
 
 variable "internal_mcp_domain" {

@@ -3,7 +3,7 @@
 # Verify this behavior in the Infinity portal after the first apply.
 
 resource "cpwai_workforce_ai_access_rule" "allow_claude" {
-  name        = "Allow Claude (Anthropic)"
+  name        = "[Terraform] Allow Claude (Anthropic)"
   description = "Allows access to Claude as an organization-approved AI tool."
   order       = 0
   active      = true
@@ -20,8 +20,8 @@ resource "cpwai_workforce_ai_access_rule" "allow_claude" {
         }
       ]
     }
-    download_file_protection = "enabled"
-    upload_file_protection   = "enabled"
+    download_file_protection = "WaitForEmulation"
+    upload_file_protection   = "WaitForEmulation"
   })
 
   source = [
@@ -32,7 +32,7 @@ resource "cpwai_workforce_ai_access_rule" "allow_claude" {
 }
 
 resource "cpwai_workforce_ai_access_rule" "allow_gemini" {
-  name        = "Allow Google Gemini"
+  name        = "[Terraform] Allow Google Gemini"
   description = "Allows access to Google Gemini as an organization-approved AI tool."
   order       = 1
   active      = true
@@ -49,8 +49,8 @@ resource "cpwai_workforce_ai_access_rule" "allow_gemini" {
         }
       ]
     }
-    download_file_protection = "enabled"
-    upload_file_protection   = "enabled"
+    download_file_protection = "WaitForEmulation"
+    upload_file_protection   = "WaitForEmulation"
   })
 
   source = [
@@ -64,7 +64,7 @@ resource "cpwai_workforce_ai_access_rule" "allow_gemini" {
 # explicitly approved requires explicit user confirmation (shadow AI), instead
 # of an outright block - chosen for a gradual rollout.
 resource "cpwai_workforce_ai_access_rule" "ask_other_genai" {
-  name        = "Ask before using unapproved GenAI tools"
+  name        = "[Terraform] Ask before using unapproved GenAI tools"
   description = "Requires user confirmation for AI tools other than Claude and Gemini."
   order       = 2
   active      = true
