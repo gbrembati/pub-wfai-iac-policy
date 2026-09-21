@@ -42,7 +42,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_credit_card_prompt" {
 resource "cpwai_workforce_ai_chats_rule" "block_credit_card_upload" {
   name        = "[Terraform] Block credit card numbers in file uploads"
   description = "Same scenario as the prompt case, but for attached files (e.g. a CSV export of transactions)."
-  order       = 1
+  order       = 6
   active      = true
 
   policy = jsonencode({
@@ -162,7 +162,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_ssn_prompt" {
 resource "cpwai_workforce_ai_chats_rule" "block_ssn_upload" {
   name        = "[Terraform] Block Social Security Numbers in file uploads"
   description = "Same scenario as the prompt case, but for attached files."
-  order       = 4
+  order       = 7
   active      = var.ssn_data_type_id != ""
 
   policy = jsonencode({
@@ -201,7 +201,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_iban_prompt" {
     Disabled by default: requires a CUSTOM data type (var.iban_data_type_id)
     created at the tenant level via the DLP Datatypes API. See README.md.
   EOT
-  order       = 5
+  order       = 8
   active      = var.iban_data_type_id != ""
 
   policy = jsonencode({
@@ -233,7 +233,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_iban_prompt" {
 resource "cpwai_workforce_ai_chats_rule" "block_iban_upload" {
   name        = "[Terraform] Block IBAN/bank account numbers in file uploads"
   description = "Same scenario as the prompt case, but for attached files."
-  order       = 6
+  order       = 9
   active      = var.iban_data_type_id != ""
 
   policy = jsonencode({
@@ -265,7 +265,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_iban_upload" {
 resource "cpwai_workforce_ai_chats_rule" "block_generic_paste_example" {
   name        = "[Terraform] [Example, disabled] Block generic paste to any GenAI tool"
   description = "Example of an aggressive guardrail against exfiltrating unclassified documents via copy/paste."
-  order       = 7
+  order       = 10
   active      = false
 
   policy = jsonencode({

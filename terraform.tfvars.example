@@ -1,8 +1,21 @@
 # Copy this file to terraform.tfvars and fill in the fields.
 # DO NOT commit terraform.tfvars (contains real credentials/IDs): it's in .gitignore.
-
-checkpoint_client_id  = "REPLACE_ME"
-checkpoint_access_key = "REPLACE_ME"
+#
+# checkpoint_client_id/checkpoint_access_key are the same Infinity Portal API
+# key used by the workforce-ai MCP server in .mcp.json (CP_CI_CLIENT_ID /
+# CP_CI_ACCESS_KEY, typically stored in .env). Don't duplicate the raw value
+# here - instead leave the two lines below commented out and export Terraform's
+# own env var equivalents from the same source before running terraform:
+#
+#   export TF_VAR_checkpoint_client_id="$CP_CI_CLIENT_ID"
+#   export TF_VAR_checkpoint_access_key="$CP_CI_ACCESS_KEY"
+#
+# (if CP_CI_CLIENT_ID/CP_CI_ACCESS_KEY aren't already exported in your shell,
+# `set -a; source .env; set +a` first). Only uncomment and fill these in
+# directly if you want a value specific to Terraform, separate from the MCP
+# server's credentials.
+# checkpoint_client_id  = "REPLACE_ME"
+# checkpoint_access_key = "REPLACE_ME"
 checkpoint_region     = "eu" # or "us"
 
 # Retrieved via POST /apps/search (Apps Catalog API) - see README.md

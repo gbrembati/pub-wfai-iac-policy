@@ -20,8 +20,8 @@ resource "cpwai_workforce_ai_access_rule" "allow_claude" {
         }
       ]
     }
-    download_file_protection = "WaitForEmulation"
-    upload_file_protection   = "WaitForEmulation"
+    download_file_protection = "na"
+    upload_file_protection   = "na"
   })
 
   source = [
@@ -49,8 +49,8 @@ resource "cpwai_workforce_ai_access_rule" "allow_gemini" {
         }
       ]
     }
-    download_file_protection = "WaitForEmulation"
-    upload_file_protection   = "WaitForEmulation"
+    download_file_protection = "na"
+    upload_file_protection   = "na"
   })
 
   source = [
