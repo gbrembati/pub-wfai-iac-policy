@@ -34,8 +34,19 @@ for you to fill in.
 
 ### 1. Claude and Gemini application IDs
 
-The `genai_application.id` field refers to your tenant's AI catalog.
-Retrieve it with the [Apps Catalog API](https://app.swaggerhub.com/apis/Check-Point/checkpoint-ai-security/1.0.0#/Apps%20Catalog)
+The `genai_application.id` field refers to your tenant's AI catalog. This
+repo ships a project-scoped [`.mcp.json`](.mcp.json) wired to Check Point's
+official MCP server specifically so this lookup doesn't require hand-crafted
+API calls - see [Using the Workforce AI MCP server](#using-the-workforce-ai-mcp-server)
+below for setup, then two ways to get the IDs:
+
+**Option A - via the MCP server (recommended, part of this repo's setup).**
+Ask your agent to look up the app ID (e.g. "find the app_id for Claude") and
+it calls the server's `search_apps` / `get_apps_by_ids` tools against your
+live tenant. Write the returned `app_id` into `claude_app_id` /
+`gemini_app_id` in `terraform.tfvars`.
+
+**Option B - manual API call.** Retrieve it with the [Apps Catalog API](https://app.swaggerhub.com/apis/Check-Point/checkpoint-ai-security/1.0.0#/Apps%20Catalog)
 (`POST /app/genai-protect-apps/external/v1/apps/search`, bearer-authenticated
 with a JWT obtained from your `checkpoint_client_id`/`checkpoint_access_key`):
 
@@ -48,10 +59,7 @@ POST /app/genai-protect-apps/external/v1/apps/search
 ```
 
 Each match in the response's `results` array has an `app_id` field - that's
-the value for `claude_app_id` / `gemini_app_id` (in `terraform.tfvars`).
-Easier: use the [Workforce AI MCP server](#using-the-workforce-ai-mcp-server-optional-for-ai-agents)
-below and have an agent look it up for you instead of crafting this call by
-hand.
+the value for `claude_app_id` / `gemini_app_id`.
 
 ### 2. DLP data types (Secrets/API Keys, SSN, IBAN)
 
@@ -93,13 +101,15 @@ evaluation order (`order`, first-match) produces the expected behavior: the
 more specific allow/block rules (Claude, Gemini, DELETE/UPDATE block) must
 precede the generic catch-alls.
 
-## Using the Workforce AI MCP server (optional, for AI agents)
+## Using the Workforce AI MCP server
 
 This repo ships a project-scoped [`.mcp.json`](.mcp.json) that wires in Check
 Point's official [`@chkp/workforce-ai-mcp`](https://github.com/CheckPointSW/workforce-ai-mcp)
-server. It lets an AI coding agent (Claude Code or any other MCP client)
-look up real tenant data directly, instead of you manually crafting `curl`
-calls against the Apps Catalog / DLP Datatypes APIs described above.
+server, so the tenant lookups needed for setup (Claude/Gemini app IDs, DLP
+data type IDs) are part of using this repo, not an optional extra: point an
+AI coding agent (Claude Code or any other MCP client) at it and have it look
+up real tenant data directly, instead of manually crafting `curl` calls
+against the Apps Catalog / DLP Datatypes APIs described above.
 
 **Division of labor:** the MCP server is for **read/lookup only** here -
 Terraform stays the single source of truth for what the policy actually is.
