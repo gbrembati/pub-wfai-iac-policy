@@ -12,4 +12,9 @@ gemini_app_id = 0 # TODO
 # Created via the DLP Datatypes API as a CUSTOM data type - see README.md
 secrets_data_type_id = "00000000-0000-0000-0000-000000000000" # TODO
 
+# Optional: created the same way as secrets_data_type_id. Leave unset (empty
+# string, the default) to keep the SSN/IBAN DLP rules disabled - see README.md
+# ssn_data_type_id  = "00000000-0000-0000-0000-000000000000"
+# iban_data_type_id = "00000000-0000-0000-0000-000000000000"
+
 internal_mcp_domain = "mcp.internal.example.com"

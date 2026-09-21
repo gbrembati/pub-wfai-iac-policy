@@ -108,10 +108,140 @@ resource "cpwai_workforce_ai_chats_rule" "redact_secrets_prompt" {
 # pattern. This is aggressive: "any-text" rules only allow block/allow, so it
 # would block EVERY paste to ANY AI tool, including Claude and Gemini.
 # Evaluate the impact (false positives) before enabling it.
+resource "cpwai_workforce_ai_chats_rule" "block_ssn_prompt" {
+  name        = "Block Social Security Numbers in prompts"
+  description = <<-EOT
+    Dangerous scenario: an employee pastes a customer's or another employee's
+    Social Security Number into a prompt, exposing PII to a third-party
+    service.
+
+    Disabled by default: requires a CUSTOM data type (var.ssn_data_type_id)
+    created at the tenant level via the DLP Datatypes API. See README.md.
+  EOT
+  order       = 3
+  active      = var.ssn_data_type_id != ""
+
+  policy = jsonencode({
+    event_type = "prompt"
+    action     = "prevent"
+    logging    = "enabled"
+    services_and_application = {
+      mode = "all"
+    }
+    data_types = [
+      {
+        id   = var.ssn_data_type_id
+        name = "Social Security Number"
+        type = "CUSTOM"
+      }
+    ]
+  })
+
+  source = [
+    {
+      assignment_type = "ASSIGNMENT_TYPE_ENTIRE_ORG"
+    }
+  ]
+}
+
+resource "cpwai_workforce_ai_chats_rule" "block_ssn_upload" {
+  name        = "Block Social Security Numbers in file uploads"
+  description = "Same scenario as the prompt case, but for attached files."
+  order       = 4
+  active      = var.ssn_data_type_id != ""
+
+  policy = jsonencode({
+    event_type = "file_upload"
+    action     = "prevent"
+    logging    = "enabled"
+    services_and_application = {
+      mode = "all"
+    }
+    data_types = [
+      {
+        id   = var.ssn_data_type_id
+        name = "Social Security Number"
+        type = "CUSTOM"
+      }
+    ]
+  })
+
+  source = [
+    {
+      assignment_type = "ASSIGNMENT_TYPE_ENTIRE_ORG"
+    }
+  ]
+}
+
+resource "cpwai_workforce_ai_chats_rule" "block_iban_prompt" {
+  name        = "Block IBAN/bank account numbers in prompts"
+  description = <<-EOT
+    Dangerous scenario: an employee pastes a customer's or the company's IBAN
+    or bank account number into a prompt, exposing financial data to a
+    third-party service.
+
+    Disabled by default: requires a CUSTOM data type (var.iban_data_type_id)
+    created at the tenant level via the DLP Datatypes API. See README.md.
+  EOT
+  order       = 5
+  active      = var.iban_data_type_id != ""
+
+  policy = jsonencode({
+    event_type = "prompt"
+    action     = "prevent"
+    logging    = "enabled"
+    services_and_application = {
+      mode = "all"
+    }
+    data_types = [
+      {
+        id   = var.iban_data_type_id
+        name = "IBAN"
+        type = "CUSTOM"
+      }
+    ]
+  })
+
+  source = [
+    {
+      assignment_type = "ASSIGNMENT_TYPE_ENTIRE_ORG"
+    }
+  ]
+}
+
+resource "cpwai_workforce_ai_chats_rule" "block_iban_upload" {
+  name        = "Block IBAN/bank account numbers in file uploads"
+  description = "Same scenario as the prompt case, but for attached files."
+  order       = 6
+  active      = var.iban_data_type_id != ""
+
+  policy = jsonencode({
+    event_type = "file_upload"
+    action     = "prevent"
+    logging    = "enabled"
+    services_and_application = {
+      mode = "all"
+    }
+    data_types = [
+      {
+        id   = var.iban_data_type_id
+        name = "IBAN"
+        type = "CUSTOM"
+      }
+    ]
+  })
+
+  source = [
+    {
+      assignment_type = "ASSIGNMENT_TYPE_ENTIRE_ORG"
+    }
+  ]
+}
+
 resource "cpwai_workforce_ai_chats_rule" "block_generic_paste_example" {
   name        = "[Example, disabled] Block generic paste to any GenAI tool"
   description = "Example of an aggressive guardrail against exfiltrating unclassified documents via copy/paste."
-  order       = 3
+  order       = 7
   active      = false
 
   policy = jsonencode({

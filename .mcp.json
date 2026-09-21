@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "workforce-ai": {
+      "command": "npx",
+      "args": ["--yes", "@chkp/workforce-ai-mcp"],
+      "env": {
+        "CP_CI_CLIENT_ID": "${CP_CI_CLIENT_ID}",
+        "CP_CI_ACCESS_KEY": "${CP_CI_ACCESS_KEY}",
+        "CP_CI_GATEWAY": "${CP_CI_GATEWAY}",
+        "MCP_MODE": "stdio"
+      }
+    }
+  }
+}

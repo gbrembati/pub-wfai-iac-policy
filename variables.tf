@@ -53,3 +53,25 @@ variable "internal_mcp_domain" {
   type        = string
   default     = "mcp.internal.example.com"
 }
+
+variable "ssn_data_type_id" {
+  description = <<-EOT
+    ID of the CUSTOM DLP data type for Social Security Numbers. This type
+    does not exist by default: it must be created at the tenant level via
+    the DLP Datatypes API, then its UUID goes here. See README.md. The
+    associated rules ship disabled (active = false) until a real ID is set.
+  EOT
+  type        = string
+  default     = ""
+}
+
+variable "iban_data_type_id" {
+  description = <<-EOT
+    ID of the CUSTOM DLP data type for IBAN/bank account numbers. This type
+    does not exist by default: it must be created at the tenant level via
+    the DLP Datatypes API, then its UUID goes here. See README.md. The
+    associated rules ship disabled (active = false) until a real ID is set.
+  EOT
+  type        = string
+  default     = ""
+}
