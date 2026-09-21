@@ -1,0 +1,15 @@
+# Copy this file to terraform.tfvars and fill in the fields.
+# DO NOT commit terraform.tfvars (contains real credentials/IDs): it's in .gitignore.
+
+checkpoint_client_id  = "REPLACE_ME"
+checkpoint_access_key = "REPLACE_ME"
+checkpoint_region     = "eu" # or "us"
+
+# Retrieved via POST /apps/search (Apps Catalog API) - see README.md
+claude_app_id = 0 # TODO
+gemini_app_id = 0 # TODO
+
+# Created via the DLP Datatypes API as a CUSTOM data type - see README.md
+secrets_data_type_id = "00000000-0000-0000-0000-000000000000" # TODO
+
+internal_mcp_domain = "mcp.internal.example.com"
