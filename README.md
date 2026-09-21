@@ -53,18 +53,20 @@ Easier: use the [Workforce AI MCP server](#using-the-workforce-ai-mcp-server-opt
 below and have an agent look it up for you instead of crafting this call by
 hand.
 
-### 2. DLP data types (Secrets/API Keys/Source Code, SSN, IBAN)
+### 2. DLP data types (Secrets/API Keys, SSN, IBAN)
 
 The "Credit Card Number" data type is predefined and its UUID
 (`cf0523c1-537e-4a4b-8bb8-084b7b9e0b45`) is already set as the default.
+`secrets_data_type_id` also has a working default out of the box: the
+tenant's predefined "Credentials" type. Override it with a `CUSTOM` type's
+UUID only if you need broader coverage later (e.g. raw source code).
 
-There is no predefined data type for secrets/source code, SSN, or IBAN: each
-must be created as a `CUSTOM` type at the tenant level via the
+There is no predefined data type for SSN or IBAN: each must be created as a
+`CUSTOM` type at the tenant level via the
 [DLP Datatypes API](https://app.swaggerhub.com/apis/Check-Point/checkpoint-ai-security/1.0.0#/DLP%20Datatypes),
-then its UUID goes into `secrets_data_type_id`, `ssn_data_type_id`, and
-`iban_data_type_id` respectively. The SSN and IBAN rules are shipped
-**disabled** (`active = false`) until you provide real IDs - see
-[Best practices](#best-practices).
+then its UUID goes into `ssn_data_type_id` / `iban_data_type_id`
+respectively. Those rules are shipped **disabled** (`active = false`) until
+you provide real IDs - see [Best practices](#best-practices).
 
 ### 3. Internal MCP domain
 

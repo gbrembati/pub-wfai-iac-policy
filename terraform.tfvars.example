@@ -22,8 +22,9 @@ checkpoint_region     = "eu" # or "us"
 claude_app_id = 0 # TODO
 gemini_app_id = 0 # TODO
 
-# Created via the DLP Datatypes API as a CUSTOM data type - see README.md
-secrets_data_type_id = "00000000-0000-0000-0000-000000000000" # TODO
+# Uses the tenant's PRE_DEFINED "Credentials" type by default (see
+# variables.tf). Override with a CUSTOM type's UUID for broader coverage.
+# secrets_data_type_id = "00000000-0000-0000-0000-000000000000"
 
 # Optional: created the same way as secrets_data_type_id. Leave unset (empty
 # string, the default) to keep the SSN/IBAN DLP rules disabled - see README.md
