@@ -31,4 +31,4 @@ gemini_app_id = 0 # TODO
 # ssn_data_type_id  = "00000000-0000-0000-0000-000000000000"
 # iban_data_type_id = "00000000-0000-0000-0000-000000000000"
 
-internal_mcp_domain = "mcp.internal.example.com"
+internal_mcp_domain = "portainer-mcp.lab.gbrembati.it"
