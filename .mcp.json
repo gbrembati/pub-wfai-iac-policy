@@ -1,11 +1,12 @@
 {
   "mcpServers": {
     "workforce-ai": {
-      "command": "npx",
-      "args": ["--yes", "@chkp/workforce-ai-mcp@latest"],
+      "command": "sh",
+      "args": [
+        "-c",
+        "set -a; [ -f ./.env ] && . ./.env; set +a; exec npx --yes @chkp/workforce-ai-mcp@latest"
+      ],
       "env": {
-        "CP_CI_CLIENT_ID": "${CP_CI_CLIENT_ID}",
-        "CP_CI_ACCESS_KEY": "${CP_CI_ACCESS_KEY}",
         "CP_CI_GATEWAY": "https://cloudinfra-gw.portal.checkpoint.com",
         "WRITE_MODE": "true",
         "MCP_MODE": "stdio"
