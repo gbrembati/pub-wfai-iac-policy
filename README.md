@@ -17,11 +17,13 @@ PII leakage, credentials in source code, and agent/MCP abuse.
 | `terraform.tfvars.example` | Template to copy into `terraform.tfvars` |
 | `access-policy.tf` | Allow Claude/Gemini + "ask" on everything else |
 | `dlp-policy.tf` | DLP rules for dangerous scenarios (credit cards, secrets, SSN, IBAN) |
-| `agents-policy.tf` | Agent/MCP rules (server allowlist, unsupervised DELETE/UPDATE) |
+| `agents-policy.tf` | Agent/MCP rules (server allowlist, DELETE/UPDATE blocks) |
+| `tests/policy.tftest.hcl` | Offline policy contract tests using a mocked provider |
 
 ## Prerequisites
 
-- Terraform >= 1.0
+- Terraform >= 1.17.1 and < 2.0.0 (current stable release: 1.17.1)
+- Check Point Workforce AI provider ~> 1.0.2 (selected version in `.terraform.lock.hcl`)
 - An Infinity Portal account with a Workforce AI license
 - An API key with the Workforce AI Security service (Settings -> API Keys -> New -> New Account API Key)
 
@@ -99,6 +101,40 @@ evaluation order (`order`, first-match) produces the expected behavior: the
 more specific allow/block rules (Claude, Gemini, DELETE/UPDATE block) must
 precede the generic catch-alls.
 
+### Upgrading an existing checkout
+
+Install [Terraform 1.17.1](https://developer.hashicorp.com/terraform/install)
+or a newer compatible release before running:
+
+```bash
+terraform init -upgrade
+terraform validate
+terraform test
+terraform plan
+```
+
+Review the plan before applying it. Version constraints do not install or
+upgrade the Terraform CLI. Keep `.terraform.lock.hcl` in version control;
+normal `terraform init` reuses its provider selection, while `-upgrade`
+selects the newest provider allowed by the constraint.
+
+The [provider changes from 1.0.0 to 1.0.2](https://github.com/CheckPointSW/terraform-provider-checkpoint-workforce-ai/compare/v1.0.0...v1.0.2)
+clarify two backend constraints:
+
+- Agents/MCP actions support only `block` and `allow`, not `ask`. The UPDATE
+  rule now uses `block`, including for supervised operations. Its Terraform
+  address remains `ask_on_update_operations` to preserve existing state
+  identity. The four Agents rules explicitly set `order = 0..3` so the
+  DELETE/UPDATE blocks precede the internal allowlist and catch-all.
+- Workforce AI access/chat scopes must use
+  `services_and_application.mode = "selected"`. The existing category
+  `60531762` wildcard already matches any AI app. `genai_application.mode =
+  "all"` still means all accounts for that app and is unchanged. Access
+  rules still support `ask`.
+
+`terraform test` uses a mocked provider with dummy credentials and app IDs;
+it checks the policy JSON and does not contact or change the tenant.
+
 ## Using the Workforce AI MCP server
 
 The project-scoped [`.mcp.json`](.mcp.json) configures Check
@@ -108,8 +144,21 @@ Claude/Gemini app IDs and DLP data type IDs needed for setup. These lookups
 are part of the repository's setup workflow; the server queries your tenant
 without requiring manual `curl` calls to the APIs described above.
 
-The MCP server is read-only in this workflow. Terraform is the single
-source of truth for the policy.
+Terraform is the single source of truth for the policy. Use MCP only for
+lookups in this workflow. The `.mcp.json` sets `WRITE_MODE = "false"`, so the
+server runs read-only and hides every tool that can change the tenant (see
+[Write mode](#write-mode)).
+
+The command is `npx --yes @chkp/workforce-ai-mcp@latest`. As documented by
+[npm](https://docs.npmjs.com/cli/v11/commands/npx#description), an unversioned
+package name can reuse a locally installed dependency. The explicit
+`@latest` suffix requests the npm `latest` dist-tag instead; it is part of
+the package name, not a separate `latest` argument. The current tag is
+`1.2.7` (checked on 2026-11-02), independently of the Terraform provider's
+version. npm may reuse cached files for the resolved version. Restart the
+MCP server to resolve a new release; an already running process does not
+update itself. For reproducible deployments, pin an exact package version
+instead of `@latest`.
 
 1. Ask the agent to look up an application or data type, for example
   "find the app_id for Claude". It uses the MCP server's
@@ -120,20 +169,38 @@ source of truth for the policy.
   the IDs are tenant-specific rather than secrets, but `.tfvars` remains
   gitignored.
 2. Once `terraform.tfvars` has real values, run `plan` and `apply` as usual
-  (see [Usage](#usage)). The MCP server does not change the live policy.
-3. Leave write mode off. The server's `WRITE_MODE` environment variable
-  allows an agent to create, edit, or delete tenant rules directly.
-  `.mcp.json` omits it, so it defaults to `false`. Direct changes bypass
-  the reviewable, versioned Terraform plan. Enable it in this repo's
-  `.mcp.json` only for a specific, reviewed reason.
+  (see [Usage](#usage)). Lookup tools do not change the live policy.
+For setup, copy `.env.example` to `.env` and fill in `CP_CI_CLIENT_ID` and
+`CP_CI_ACCESS_KEY` (same values as `checkpoint_client_id`/`checkpoint_access_key`).
+`.env` is gitignored. `.mcp.json` starts the server through `sh`, which
+sources `./.env` from the project root before running `npx`, so no manual
+`export` is needed. Each line of `.env` must be a valid shell assignment
+(`KEY=value`); quote values that contain spaces or special characters.
+Reconnect the MCP server (for example `/mcp` in Claude Code) after editing
+`.env`. `.mcp.json` contains no credentials.
+`CP_CI_GATEWAY` defaults to the EU endpoint,
+`https://cloudinfra-gw.portal.checkpoint.com`, in `.mcp.json`. For a US tenant,
+set `CP_CI_GATEWAY=https://cloudinfra-gw-us.portal.checkpoint.com` in `.env`;
+values in `.env` take precedence over the defaults in `.mcp.json`.
 
-For setup, export `CP_CI_CLIENT_ID`, `CP_CI_ACCESS_KEY` (same values as
-`checkpoint_client_id`/`checkpoint_access_key`), and `CP_CI_GATEWAY`
-(`https://cloudinfra-gw.portal.checkpoint.com` for `eu`,
-`https://cloudinfra-gw-us.portal.checkpoint.com` for `us`) in the shell your
-agent/editor runs in, then restart it to load the MCP server configuration.
-`.mcp.json` references `${CP_CI_CLIENT_ID}` and the other environment
-variables; it contains no literal credentials.
+### Write mode
+
+`WRITE_MODE` controls whether the server exposes its write tools
+(`create_*`, `delete_*`, `set_*`, `patch_*`, `reorder_rule`,
+`update_*_object`). Only the exact value `"true"` (case-insensitive) enables
+them; any other value, or omitting the variable, keeps the server read-only.
+
+| Value | Effect |
+|-------|--------|
+| `"false"` (default in `.mcp.json`) | Read-only: only lookup and reporting tools are available |
+| `"true"` | The agent can create, modify, reorder, and delete tenant rules and objects |
+
+To enable write mode, change the value in `.mcp.json` to `"true"` and
+reconnect the MCP server. To enable it only for yourself without changing the
+tracked file, add `WRITE_MODE=true` to your `.env` instead. Changes made
+through MCP bypass the reviewable, versioned Terraform plan and drift from the
+Terraform state, so the next `terraform apply` may revert them. Enable write
+mode only for a specific, reviewed reason, and turn it off afterwards.
 
 ## Dangerous scenarios covered
 
@@ -145,7 +212,7 @@ variables; it contains no literal credentials.
 | `block_iban_prompt` / `_upload` (disabled by default) | An employee pastes or uploads a bank account/IBAN number | Block (`prevent`) on any service, once a real `iban_data_type_id` is set |
 | `block_generic_paste_example` (disabled) | A user pastes an entire confidential document with no recognized DLP pattern | Full paste block - aggressive, evaluate before enabling |
 | `block_destructive_operations` | An AI agent invokes an MCP tool with an unsupervised `DELETE` operation | Blocks `DELETE` operations on all MCP servers |
-| `ask_on_update_operations` | An AI agent invokes an MCP tool with an unsupervised `UPDATE` operation | Requires explicit user confirmation before `UPDATE` operations |
+| `ask_on_update_operations` (legacy Terraform address) | An AI agent invokes an MCP tool with an `UPDATE` operation | Blocks all matching `UPDATE` operations; Agents/MCP does not support `ask` |
 | `block_unlisted_mcp_servers` | An employee connects an unverified third-party MCP server (tool poisoning / supply chain) | Blocks every non-whitelisted MCP server |
 | `ask_other_genai` | Use of shadow AI (a GenAI tool other than Claude/Gemini) | Requires explicit user confirmation |
 
@@ -185,10 +252,10 @@ variables; it contains no literal credentials.
   (`allow_internal_mcp_only`) instead of broad allow rules. Evaluate the
   destructive/unsupervised-operation blocks (`DELETE`, `UPDATE`) before
   the allowlist so they also cover trusted internal servers if compromised.
-- Keep file protection enabled for approved tools. Approved
-  tools (Claude, Gemini) still get `upload_file_protection` /
-  `download_file_protection` set to `"enabled"`, not `"na"`, so their file
-  transfers remain monitored.
+- Keep `upload_file_protection` / `download_file_protection` set to `"na"`
+  on Workforce AI access rules, as required by the
+  [provider schema](https://github.com/CheckPointSW/terraform-provider-checkpoint-workforce-ai/blob/v1.0.2/docs/resources/cpwai_workforce_ai_access_rule.md).
+  File upload DLP is handled by the separate chats rules.
 - Review disabled example and optional rules before enabling them.
   `block_generic_paste_example`, `block_ssn_prompt`/`_upload`, and
   `block_iban_prompt`/`_upload` ship `active = false` because they are
