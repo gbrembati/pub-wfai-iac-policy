@@ -4,7 +4,7 @@
 # perform destructive operations without human supervision.
 #
 # Intentional ordering (first match wins): the destructive-operations block
-# and the unsupervised-UPDATE ask rule are evaluated BEFORE the allow rule
+# and the UPDATE block rule are evaluated BEFORE the allow rule
 # for internal servers, so they also cover whitelisted internal MCP servers.
 
 resource "cpwai_workforce_ai_agents_rule" "block_destructive_operations" {
@@ -15,6 +15,7 @@ resource "cpwai_workforce_ai_agents_rule" "block_destructive_operations" {
     DB records, cloud resources - without human supervision. This also applies
     to whitelisted internal MCP servers (see rule ordering).
   EOT
+  order       = 0
   active      = true
 
   policy = jsonencode({
@@ -46,18 +47,20 @@ resource "cpwai_workforce_ai_agents_rule" "block_destructive_operations" {
 }
 
 resource "cpwai_workforce_ai_agents_rule" "ask_on_update_operations" {
-  name        = "[Terraform] Ask before unsupervised UPDATE tool operations"
+  name        = "[Terraform] Block UPDATE tool operations"
   description = <<-EOT
     Dangerous scenario: an AI agent autonomously invokes an MCP tool with an
     UPDATE operation (e.g. modifying a record, a file, a cloud resource)
-    without human supervision. Less severe than DELETE, so this asks for
-    confirmation instead of blocking outright. Evaluated before the internal
-    allowlist, so it also covers whitelisted internal MCP servers.
+    without human supervision. Agents/MCP rules support only block or allow,
+    so this blocks every matching UPDATE operation, including supervised ones.
+    Evaluated before the internal allowlist, so it also covers whitelisted
+    internal MCP servers.
   EOT
+  order       = 1
   active      = true
 
   policy = jsonencode({
-    action  = "ask"
+    action  = "block"
     logging = "enabled"
     clients = {
       mode = "all"
@@ -87,6 +90,7 @@ resource "cpwai_workforce_ai_agents_rule" "ask_on_update_operations" {
 resource "cpwai_workforce_ai_agents_rule" "allow_internal_mcp_only" {
   name        = "[Terraform] Allow only internal MCP servers"
   description = "Allows connections only to vetted internal company MCP servers."
+  order       = 2
   active      = true
 
   policy = jsonencode({
@@ -129,6 +133,7 @@ resource "cpwai_workforce_ai_agents_rule" "block_unlisted_mcp_servers" {
     server (e.g. found in a public repository) to their AI client, which may
     contain malicious or compromised tools (supply chain / tool poisoning).
   EOT
+  order       = 3
   active      = true
 
   policy = jsonencode({
