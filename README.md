@@ -145,9 +145,9 @@ are part of the repository's setup workflow; the server queries your tenant
 without requiring manual `curl` calls to the APIs described above.
 
 Terraform is the single source of truth for the policy. Use MCP only for
-lookups in this workflow. The current `.mcp.json` sets `WRITE_MODE = "true"`,
-so the server also exposes tools that can change the tenant directly;
-the configuration does not enforce read-only access.
+lookups in this workflow. The `.mcp.json` sets `WRITE_MODE = "false"`, so the
+server runs read-only and hides every tool that can change the tenant (see
+[Write mode](#write-mode)).
 
 The command is `npx --yes @chkp/workforce-ai-mcp@latest`. As documented by
 [npm](https://docs.npmjs.com/cli/v11/commands/npx#description), an unversioned
@@ -170,25 +170,37 @@ instead of `@latest`.
   gitignored.
 2. Once `terraform.tfvars` has real values, run `plan` and `apply` as usual
   (see [Usage](#usage)). Lookup tools do not change the live policy.
-3. Prefer write mode off. The server's `WRITE_MODE` environment variable
-  allows an agent to create, edit, or delete tenant rules directly.
-  Set it to `"false"` or omit it (default: `false`) for read-only access.
-  Direct changes bypass the reviewable, versioned Terraform plan. Keep it
-  enabled only for a specific, reviewed reason.
-
-For setup, export `CP_CI_CLIENT_ID`, `CP_CI_ACCESS_KEY` (same values as
-`checkpoint_client_id`/`checkpoint_access_key`) in the shell your agent/editor
-runs in, then launch the MCP client from that shell. Exporting variables in an
-integrated terminal does not update an already running editor's environment.
-`.mcp.json` references `${CP_CI_CLIENT_ID}` and `${CP_CI_ACCESS_KEY}`;
-the MCP client must support resolving these placeholders from its environment.
-Some clients pass them literally, causing authentication to fail. The file
-contains no literal credentials.
+For setup, copy `.env.example` to `.env` and fill in `CP_CI_CLIENT_ID` and
+`CP_CI_ACCESS_KEY` (same values as `checkpoint_client_id`/`checkpoint_access_key`).
+`.env` is gitignored. `.mcp.json` starts the server through `sh`, which
+sources `./.env` from the project root before running `npx`, so no manual
+`export` is needed. Each line of `.env` must be a valid shell assignment
+(`KEY=value`); quote values that contain spaces or special characters.
+Reconnect the MCP server (for example `/mcp` in Claude Code) after editing
+`.env`. `.mcp.json` contains no credentials.
 `CP_CI_GATEWAY` defaults to the EU endpoint,
-`https://cloudinfra-gw.portal.checkpoint.com`, directly in `.mcp.json`.
-For a US tenant, change that entry to
-`https://cloudinfra-gw-us.portal.checkpoint.com` and restart the MCP server.
-The configured value takes precedence over the shell's `CP_CI_GATEWAY`.
+`https://cloudinfra-gw.portal.checkpoint.com`, in `.mcp.json`. For a US tenant,
+set `CP_CI_GATEWAY=https://cloudinfra-gw-us.portal.checkpoint.com` in `.env`;
+values in `.env` take precedence over the defaults in `.mcp.json`.
+
+### Write mode
+
+`WRITE_MODE` controls whether the server exposes its write tools
+(`create_*`, `delete_*`, `set_*`, `patch_*`, `reorder_rule`,
+`update_*_object`). Only the exact value `"true"` (case-insensitive) enables
+them; any other value, or omitting the variable, keeps the server read-only.
+
+| Value | Effect |
+|-------|--------|
+| `"false"` (default in `.mcp.json`) | Read-only: only lookup and reporting tools are available |
+| `"true"` | The agent can create, modify, reorder, and delete tenant rules and objects |
+
+To enable write mode, change the value in `.mcp.json` to `"true"` and
+reconnect the MCP server. To enable it only for yourself without changing the
+tracked file, add `WRITE_MODE=true` to your `.env` instead. Changes made
+through MCP bypass the reviewable, versioned Terraform plan and drift from the
+Terraform state, so the next `terraform apply` may revert them. Enable write
+mode only for a specific, reviewed reason, and turn it off afterwards.
 
 ## Dangerous scenarios covered
 

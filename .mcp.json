@@ -8,7 +8,7 @@
       ],
       "env": {
         "CP_CI_GATEWAY": "https://cloudinfra-gw.portal.checkpoint.com",
-        "WRITE_MODE": "true",
+        "WRITE_MODE": "false",
         "MCP_MODE": "stdio"
       }
     }

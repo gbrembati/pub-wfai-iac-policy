@@ -5,4 +5,5 @@ terraform.tfvars
 crash.log
 .env
 .env.*
+!.env.example
 .DS_Store
