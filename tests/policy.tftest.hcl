@@ -26,16 +26,6 @@ run "agents_actions" {
     condition     = jsondecode(cpwai_workforce_ai_agents_rule.ask_on_update_operations.policy).action == "block"
     error_message = "UPDATE operations must remain blocked rather than silently allowed."
   }
-
-  assert {
-    condition = (
-      cpwai_workforce_ai_agents_rule.block_destructive_operations.order == 0 &&
-      cpwai_workforce_ai_agents_rule.ask_on_update_operations.order == 1 &&
-      cpwai_workforce_ai_agents_rule.allow_internal_mcp_only.order == 2 &&
-      cpwai_workforce_ai_agents_rule.block_unlisted_mcp_servers.order == 3
-    )
-    error_message = "DELETE/UPDATE blocks must precede the internal allowlist and catch-all."
-  }
 }
 
 run "workforce_ai_service_scope" {

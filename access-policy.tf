@@ -1,11 +1,11 @@
 # --- Baseline Access Policy: Workforce AI ---
-# First-match evaluation: the rule with the lowest `order` that matches wins.
-# Verify this behavior in the Infinity portal after the first apply.
+# First-match evaluation: the rule with the lowest position that matches wins.
+# Rule positions are not managed by Terraform (`order` is optional and left to
+# the backend): set and verify them in the Infinity portal after the first apply.
 
 resource "cpwai_workforce_ai_access_rule" "allow_claude" {
   name        = "[Terraform] Allow Claude (Anthropic)"
   description = "Allows access to Claude as an organization-approved AI tool."
-  order       = 0
   active      = true
 
   policy = jsonencode({
@@ -34,7 +34,6 @@ resource "cpwai_workforce_ai_access_rule" "allow_claude" {
 resource "cpwai_workforce_ai_access_rule" "allow_gemini" {
   name        = "[Terraform] Allow Google Gemini"
   description = "Allows access to Google Gemini as an organization-approved AI tool."
-  order       = 1
   active      = true
 
   policy = jsonencode({
@@ -66,7 +65,6 @@ resource "cpwai_workforce_ai_access_rule" "allow_gemini" {
 resource "cpwai_workforce_ai_access_rule" "ask_other_genai" {
   name        = "[Terraform] Ask before using unapproved GenAI tools"
   description = "Requires user confirmation for AI tools other than Claude and Gemini."
-  order       = 2
   active      = true
 
   policy = jsonencode({

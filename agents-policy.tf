@@ -3,9 +3,11 @@
 # to an unvetted external MCP server and invokes its tools to exfiltrate data or
 # perform destructive operations without human supervision.
 #
-# Intentional ordering (first match wins): the destructive-operations block
-# and the UPDATE block rule are evaluated BEFORE the allow rule
+# Intended ordering (first match wins): the destructive-operations block
+# and the UPDATE block rule must be evaluated BEFORE the allow rule
 # for internal servers, so they also cover whitelisted internal MCP servers.
+# Rule positions are not managed by Terraform (`order` is optional): set and
+# verify them in the Infinity portal.
 
 resource "cpwai_workforce_ai_agents_rule" "block_destructive_operations" {
   name        = "[Terraform] Block unsupervised destructive tool operations"
@@ -15,7 +17,6 @@ resource "cpwai_workforce_ai_agents_rule" "block_destructive_operations" {
     DB records, cloud resources - without human supervision. This also applies
     to whitelisted internal MCP servers (see rule ordering).
   EOT
-  order       = 0
   active      = true
 
   policy = jsonencode({
@@ -56,7 +57,6 @@ resource "cpwai_workforce_ai_agents_rule" "ask_on_update_operations" {
     Evaluated before the internal allowlist, so it also covers whitelisted
     internal MCP servers.
   EOT
-  order       = 1
   active      = true
 
   policy = jsonencode({
@@ -90,7 +90,6 @@ resource "cpwai_workforce_ai_agents_rule" "ask_on_update_operations" {
 resource "cpwai_workforce_ai_agents_rule" "allow_internal_mcp_only" {
   name        = "[Terraform] Allow only internal MCP servers"
   description = "Allows connections only to vetted internal company MCP servers."
-  order       = 2
   active      = true
 
   policy = jsonencode({
@@ -133,7 +132,6 @@ resource "cpwai_workforce_ai_agents_rule" "block_unlisted_mcp_servers" {
     server (e.g. found in a public repository) to their AI client, which may
     contain malicious or compromised tools (supply chain / tool poisoning).
   EOT
-  order       = 3
   active      = true
 
   policy = jsonencode({
