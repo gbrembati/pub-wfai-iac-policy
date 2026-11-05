@@ -96,10 +96,11 @@ terraform plan
 terraform apply
 ```
 
-After the first `apply`, verify in the Infinity portal that the rule
-evaluation order (`order`, first-match) produces the expected behavior: the
-more specific allow/block rules (Claude, Gemini, DELETE/UPDATE block) must
-precede the generic catch-alls.
+Rule positions in the rule base are not set by this configuration: `order`
+is optional in the provider, so new rules are placed by the backend. After the
+first `apply`, arrange and verify the rule evaluation order (first-match) in
+the Infinity portal: the more specific allow/block rules (Claude, Gemini,
+DELETE/UPDATE block) must precede the generic catch-alls.
 
 ### Upgrading an existing checkout
 
@@ -124,8 +125,8 @@ clarify two backend constraints:
 - Agents/MCP actions support only `block` and `allow`, not `ask`. The UPDATE
   rule now uses `block`, including for supervised operations. Its Terraform
   address remains `ask_on_update_operations` to preserve existing state
-  identity. The four Agents rules explicitly set `order = 0..3` so the
-  DELETE/UPDATE blocks precede the internal allowlist and catch-all.
+  identity. The DELETE/UPDATE blocks must precede the internal allowlist and
+  catch-all in the rule base.
 - Workforce AI access/chat scopes must use
   `services_and_application.mode = "selected"`. The existing category
   `60531762` wildcard already matches any AI app. `genai_application.mode =
@@ -219,8 +220,8 @@ mode only for a specific, reviewed reason, and turn it off afterwards.
 ## Extending the policy
 
 - To block/allow other AI tools: add more `cpwai_workforce_ai_access_rule`
-  resources with an `order` lower than the catch-all (`ask_other_genai`,
-  currently `order = 2`).
+  resources and place them above the catch-all (`ask_other_genai`) in the
+  rule base. You can optionally pin a position with the `order` attribute.
 - For other DLP data types beyond SSN/IBAN: look them up with the DLP
   Datatypes API and add new rules in `dlp-policy.tf` following the same
   pattern.
@@ -233,11 +234,12 @@ mode only for a specific, reviewed reason, and turn it off afterwards.
   with a new tool or DLP data type in `ask` mode and review the logs for
   false positives before switching to `block`/`prevent`. The baseline uses
   this approach for `ask_other_genai`.
-- Respect first-match ordering. This provider evaluates rules by
-  ascending `order`; the first match wins. Put the most specific rules
+- Respect first-match ordering. Rules are evaluated by ascending position
+  in the rule base; the first match wins. Put the most specific rules
   (approved tools, destructive-operation blocks) before generic catch-alls,
   and verify the effective order in the Infinity portal after every
-  `apply`. Terraform won't catch a logical ordering mistake.
+  `apply`. This configuration does not set `order`, so Terraform won't catch
+  a logical ordering mistake.
 - Keep `logging = "enabled"` on every rule. All baseline rules log by
   default, including `allow` rules. Use those logs to validate a rollout
   before tightening restrictions.
