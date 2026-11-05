@@ -17,7 +17,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_credit_card_prompt" {
     action     = "prevent"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
@@ -48,7 +48,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_credit_card_upload" {
     action     = "prevent"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
@@ -89,7 +89,7 @@ resource "cpwai_workforce_ai_chats_rule" "redact_secrets_prompt" {
     action     = "redact"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
@@ -134,7 +134,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_ssn_prompt" {
     action     = "prevent"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
@@ -165,7 +165,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_ssn_upload" {
     action     = "prevent"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
@@ -203,7 +203,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_iban_prompt" {
     action     = "prevent"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
@@ -234,7 +234,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_iban_upload" {
     action     = "prevent"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
@@ -265,7 +265,7 @@ resource "cpwai_workforce_ai_chats_rule" "block_generic_paste_example" {
     action     = "block"
     logging    = "enabled"
     services_and_application = {
-      mode     = "selected"
+      mode = "selected"
       category = [
         { category_id = 60531762 } # Generative AI Tools (wildcard)
       ]
